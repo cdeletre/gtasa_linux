@@ -11,7 +11,6 @@ set(GTASA_CONFIG_NAME "gtasa_nx.cfg" CACHE STRING "Wrapper configuration filenam
 set(GTASA_APPSTATE_NAME "appstate.txt" CACHE STRING "Wrapper app-state filename")
 set(GAME_BINARY_NAME "gtasa_linux" CACHE STRING "Game executable target and output name")
 
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL3 REQUIRED IMPORTED_TARGET sdl3)
 pkg_check_modules(EGL REQUIRED IMPORTED_TARGET egl)
