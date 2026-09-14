@@ -256,6 +256,10 @@ int main(void) {
   debugPrintf("lifecycle: implOnSurfaceCreated\n");
   ((void (*)(void *, void *))implOnSurfaceCreated)(fake_env, gn);
   debugPrintf("lifecycle: implOnSurfaceCreated returned\n");
+  /* Vice City starts Es2Thread from implOnSurfaceChanged, unlike San Andreas
+   * which starts RenderQueue later. Release SDL's main-thread context before
+   * entering that callback so the native render thread can acquire it. */
+  linux_release_sdl_context();
   debugPrintf("lifecycle: implOnSurfaceChanged\n");
   ((void (*)(void *, void *, void *, int, int))implOnSurfaceChanged)(
       fake_env, gn, surface, screen_width, screen_height);

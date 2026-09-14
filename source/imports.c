@@ -223,7 +223,7 @@ static bool g_sdl_native_context;
 static bool is_render_queue_thread(void) {
   char name[16] = {0};
   pthread_getname_np(pthread_self(), name, sizeof(name));
-  return strcmp(name, "RenderQueue") == 0;
+  return strcmp(name, "RenderQueue") == 0 || strcmp(name, "Es2Thread") == 0;
 }
 
 void linux_release_sdl_context(void) {
