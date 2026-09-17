@@ -48,6 +48,11 @@ if [ "$sdl3_system" = 1 ]; then
     export LD_LIBRARY_PATH="$GAMEDIR:${LD_LIBRARY_PATH:-}"
 else
     pm_message "Using bundled SDL3-to-SDL2 shim."
+    # The shim delegates these subsystems to the platform SDL2.  Do not let
+    # frontend SDL3/SDL2 driver selections force a competing native backend.
+    unset SDL_VIDEODRIVER SDL_VIDEO_DRIVER SDL_AUDIODRIVER SDL_AUDIO_DRIVER \
+        SDL_JOYSTICK_DRIVER SDL_GAMEPAD_DRIVER SDL_VIDEO_GL_DRIVER \
+        SDL_EGL_LIBRARY SDL_RENDER_DRIVER
     export LD_LIBRARY_PATH="$GAMEDIR/libs.${DEVICE_ARCH}:$GAMEDIR:${LD_LIBRARY_PATH:-}"
 fi
 
