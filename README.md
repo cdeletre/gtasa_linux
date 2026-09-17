@@ -78,6 +78,9 @@ the GitHub Actions workflow builds this shim rather than native SDL3.
 - `GTASA_INPUT_DEBUG=1` logs native controller dispatch, and
   `GTASA_AUDIO_DEBUG=1` reports mixed/non-silent PCM counters every five seconds.
   Counters are diagnostics, not proof that speakers are audible.
+- `GTASA_DEBUG_LOG=1` enables the full compatibility log at runtime and writes
+  `debug.log`; it is unset by default in release packages. Values `0`, `false`,
+  and `off` keep it disabled.
 - The TRIMUI Smart Pro S controller and game audio were user-confirmed on Knulli.
 
 ### Exit controls

@@ -169,10 +169,13 @@ The source port and its reproducible AArch64 build/package workflow are at:
 
 ```sh
 cmake -S . -B build-linux -DBUILD_TESTING=ON \
-  -DGTASA_DEBUG_LOG=OFF -DGTASA_QUIT_CHORD=ON
+  -DGTASA_QUIT_CHORD=ON
 cmake --build build-linux -j2
 ctest --test-dir build-linux --output-on-failure
 ```
+
+Set `GTASA_DEBUG_LOG=1` when launching the release binary to enable the full
+compatibility log and write `debug.log`; it is disabled by default.
 
 Thanks to **Rockstar Games and Grove Street Games** for creating and
 publishing Grand Theft Auto: San Andreas; to **NaGaa95** for the Android ARM64

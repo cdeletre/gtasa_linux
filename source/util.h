@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 
-// the game's `printf` import target; compiles to a no-op with DEBUG_LOG off
+// Runtime-controlled compatibility logging; enabled with GTASA_DEBUG_LOG=1.
 int debugPrintf(char *text, ...);
 
 size_t strlcpy(char *dst, const char *src, size_t dst_size);

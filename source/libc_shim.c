@@ -559,13 +559,11 @@ static int is_fake_file(const void *f) {
 
 size_t fwrite_fake(const void *ptr, size_t size, size_t n, FILE *f) {
   if (is_fake_file(f)) {
-#ifdef DEBUG_LOG
     static char buf[0x400];
     const size_t total = size * n < sizeof(buf) - 1 ? size * n : sizeof(buf) - 1;
     memcpy(buf, ptr, total);
     buf[total] = '\0';
     debugPrintf("stdio: %s", buf);
-#endif
     return n;
   }
   return fwrite(ptr, size, n, f);
@@ -620,13 +618,9 @@ int fprintf_fake(FILE *f, const char *fmt, ...) {
   va_start(va, fmt);
   int ret;
   if (is_fake_file(f)) {
-#ifdef DEBUG_LOG
     static char buf[0x400];
     ret = vsnprintf(buf, sizeof(buf), fmt, va);
     debugPrintf("stdio: %s", buf);
-#else
-    ret = 0;
-#endif
   } else {
     ret = vfprintf(f, fmt, va);
   }
@@ -636,14 +630,10 @@ int fprintf_fake(FILE *f, const char *fmt, ...) {
 
 int vfprintf_fake(FILE *f, const char *fmt, va_list va) {
   if (is_fake_file(f)) {
-#ifdef DEBUG_LOG
     static char buf[0x400];
     int ret = vsnprintf(buf, sizeof(buf), fmt, va);
     debugPrintf("stdio: %s", buf);
     return ret;
-#else
-    return 0;
-#endif
   }
   return vfprintf(f, fmt, va);
 }

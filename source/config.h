@@ -32,9 +32,7 @@
 #endif
 #define APPSTATE_NAME GTASA_APPSTATE_NAME
 
-// Define to write debug.log and nxlink stdout. Off for release (debugPrintf
-// becomes a no-op).
-//#define DEBUG_LOG 1
+// Set GTASA_DEBUG_LOG=1 at runtime to write debug.log and compatibility output.
 
 // actual screen size
 extern int screen_width;

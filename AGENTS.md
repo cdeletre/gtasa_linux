@@ -31,10 +31,10 @@ podman exec gtasa-aarch64-build cp -L /opt/target-aarch64/lib/libSDL3.so.0 /src/
 When reconfiguring, target pkg-config must precede host paths:
 `PKG_CONFIG_PATH=/opt/target-aarch64/lib/pkgconfig`,
 `PKG_CONFIG_LIBDIR=/opt/target-aarch64/lib/pkgconfig:/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig`.
-The existing game cache uses Linux/aarch64, RelWithDebInfo, DEBUG_LOG=OFF, and
-find roots `/usr/aarch64-linux-gnu;/opt/target-aarch64`.
-Enable `-DGTASA_DEBUG_LOG=ON` only for a diagnostic build; normal handheld
-builds must leave it off so EGL compatibility traces do not reach the log.
+The existing game cache uses Linux/aarch64, RelWithDebInfo, debug logging off by
+default, and find roots `/usr/aarch64-linux-gnu;/opt/target-aarch64`.
+Set `GTASA_DEBUG_LOG=1` only for a diagnostic run; normal handheld launches
+leave it unset so EGL compatibility traces do not reach the log.
 
 The PortMaster runtime is an SDL3-to-system-SDL2 shim with GLES/GPU support;
 the shim dynamically loads each target's patched SDL2. Debian arm64 development packages:

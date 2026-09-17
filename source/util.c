@@ -22,13 +22,19 @@
 static FILE *g_log;
 static pthread_mutex_t g_log_lock = PTHREAD_MUTEX_INITIALIZER;
 
+static int debug_log_enabled(void) {
+  const char *value = getenv("GTASA_DEBUG_LOG");
+  return value && *value && strcmp(value, "0") != 0 &&
+         strcasecmp(value, "false") != 0 && strcasecmp(value, "off") != 0;
+}
+
 void userAppInit(void) {
-#ifdef DEBUG_LOG
-  pthread_mutex_lock(&g_log_lock);
-  if (!g_log)
-    g_log = fopen(LOG_NAME, "w");
-  pthread_mutex_unlock(&g_log_lock);
-#endif
+  if (debug_log_enabled()) {
+    pthread_mutex_lock(&g_log_lock);
+    if (!g_log)
+      g_log = fopen(LOG_NAME, "w");
+    pthread_mutex_unlock(&g_log_lock);
+  }
 }
 
 void userAppExit(void) {
@@ -42,7 +48,7 @@ void userAppExit(void) {
 
 /* The Android game imports printf through the loader's import table. */
 int debugPrintf(char *text, ...) {
-#ifdef DEBUG_LOG
+  if (debug_log_enabled()) {
   va_list list;
   pthread_mutex_lock(&g_log_lock);
 
@@ -60,9 +66,7 @@ int debugPrintf(char *text, ...) {
   vfprintf(stderr, text, list);
   va_end(list);
   pthread_mutex_unlock(&g_log_lock);
-#else
-  (void)text;
-#endif
+  }
   return 0;
 }
 
