@@ -109,6 +109,8 @@ by remote GDB/disassembly, not merely the final log line.
 
 The Linux target now links `source/hooks/game_linux.c` (symbol-based thread,
 JNI, screen, cloud platform hooks), not `source/hooks/game.c` or Switch assembly.
+The D-pad Down free-aim latch lives there too but is an opt-in compile flag
+(`-DGTASA_FREE_AIM=ON`, off by default); default builds stay offset-free.
 Do not restore offset-based gameplay patches without exact-version validation.
 
 Android `GameView` here is a SurfaceView, not GLSurfaceView. `GameThread` calls

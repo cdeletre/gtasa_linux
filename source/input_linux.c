@@ -12,6 +12,12 @@
 #define BUTTONS 14
 #define GN "Java_com_rockstargames_oswrapper_GameNative_"
 
+#ifdef GTASA_FREE_AIM
+/* Published each poll for the free-aim latch in hooks/game_linux.c (D-pad
+ * Down drops an auto-aim lock into free aim). Owned by main_linux.c. */
+extern volatile int g_dpad_down;
+#endif
+
 typedef struct {
   SDL_Gamepad *handle;
   SDL_JoystickID id;
@@ -203,6 +209,9 @@ void linux_input_event(const SDL_Event *event) {
       break;
     case SDL_EVENT_WINDOW_FOCUS_LOST:
       focused = false;
+#ifdef GTASA_FREE_AIM
+      g_dpad_down = 0;
+#endif
       for (int p = 0; p < count; p++) reset_pad(p);
       break;
     case SDL_EVENT_WINDOW_FOCUS_GAINED:
@@ -222,11 +231,23 @@ void linux_input_update(void) {
    * connected/disconnected callbacks instead. */
   if (input_abi == INPUT_ABI_COUNT)
     count_changed(fake_env, NULL, count);
-  if (!focused) return;
+  if (!focused) {
+#ifdef GTASA_FREE_AIM
+    g_dpad_down = 0;
+#endif
+    return;
+  }
+#ifdef GTASA_FREE_AIM
+  int dpad_down = 0;
+#endif
   for (int p = 0; p < count; p++) {
     if (!SDL_GamepadConnected(pads[p].handle)) continue;
     for (int b = 0; b < BUTTONS; b++)
       send_button(p, b, SDL_GetGamepadButton(pads[p].handle, buttons[b]));
+#ifdef GTASA_FREE_AIM
+    if (SDL_GetGamepadButton(pads[p].handle, SDL_GAMEPAD_BUTTON_DPAD_DOWN))
+      dpad_down = 1;
+#endif
     float axes[6];
     for (int a = 0; a < 6; a++) {
       Sint16 value = SDL_GetGamepadAxis(pads[p].handle, (SDL_GamepadAxis)a);
@@ -235,10 +256,16 @@ void linux_input_update(void) {
     }
     send_axes(p, axes, false);
   }
+#ifdef GTASA_FREE_AIM
+  g_dpad_down = dpad_down;
+#endif
 }
 
 void linux_input_shutdown(void) {
   if (!initialized) return;
+#ifdef GTASA_FREE_AIM
+  g_dpad_down = 0;
+#endif
   for (int p = 0; p < count; p++) {
     reset_pad(p);
     if (input_abi == INPUT_ABI_PER_PAD)

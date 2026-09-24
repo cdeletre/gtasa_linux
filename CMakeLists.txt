@@ -5,6 +5,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 option(GTASA_DEBUG_LOG "Write the compatibility debug log" OFF)
 option(GTASA_QUIT_CHORD "Enable the Guide/Back + Start quit chord" ON)
+option(GTASA_FREE_AIM "Enable the D-pad Down free-aim latch (v2.11.311-validated gameplay patch)" OFF)
 option(GTASA_SDL2_SHIM "Build against the SDL3-to-system-SDL2 runtime shim" OFF)
 set(GTASA_PRODUCT_NAME "Grand Theft Auto: San Andreas" CACHE STRING "Window and fatal-error product name")
 set(GTASA_CONFIG_NAME "gtasa_nx.cfg" CACHE STRING "Wrapper configuration filename")
@@ -58,7 +59,18 @@ endif()
 if(GTASA_QUIT_CHORD)
     target_compile_definitions(${GAME_BINARY_NAME} PRIVATE GTASA_QUIT_CHORD=1)
 endif()
+if(GTASA_FREE_AIM)
+    target_compile_definitions(${GAME_BINARY_NAME} PRIVATE GTASA_FREE_AIM=1)
+endif()
 target_compile_options(${GAME_BINARY_NAME} PRIVATE -Wall -Wextra -Wno-unused-parameter)
+
+# Free-aim trampoline is AArch64 assembly. Host (x86_64) builds skip it and
+# use the weak NULL refs in game_linux.c; the pure-C IsFreeAimMode /
+# IsLockOnMode hooks still apply there at the source level.
+if(GTASA_FREE_AIM AND CMAKE_SYSTEM_PROCESSOR MATCHES "[Aa][Aa][Rr][Cc][Hh]64|[Aa][Rr][Mm]64")
+  enable_language(ASM)
+  target_sources(${GAME_BINARY_NAME} PRIVATE source/hooks/free_aim_stub.s)
+endif()
 
 install(TARGETS ${GAME_BINARY_NAME} RUNTIME DESTINATION bin)
 

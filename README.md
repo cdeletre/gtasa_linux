@@ -99,6 +99,15 @@ The quit chord is a compile-time option and is enabled by default. Disable it
 with `-DGTASA_QUIT_CHORD=OFF` when configuring CMake, or explicitly enable it
 with `-DGTASA_QUIT_CHORD=ON`.
 
+### Free aim (opt-in)
+
+Stock v2.11.311 hides the free-aim setting whenever a gamepad is in use and
+forces lock-on. The port can restore a manual opt-out: pressing **D-pad Down**
+during auto-aim drops the lock into free aim until aiming ends. This is an
+opt-in compile flag and is disabled by default; enable it with
+`-DGTASA_FREE_AIM=ON` when configuring CMake. The hook offsets are validated
+for v2.11.311 only.
+
 Host tests (SDL3/OpenAL development packages required):
 
 ```sh
