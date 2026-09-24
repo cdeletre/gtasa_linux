@@ -16,6 +16,14 @@ PACKAGE_ROOT="${PORTMASTER_PACKAGE_ROOT:-/workspace/package}"
 SDL_COMMIT="${SDL_COMMIT:-6057d79baf8321bf190479a699655f06cc2a962f}"
 SPIRV_CROSS_COMMIT="${SPIRV_CROSS_COMMIT:-be71ee8c12cd7dc5ca8fa9581f708c2e8561fe2a}"
 
+# ccache disk cache (Containerfile mounts a persistent volume at CCACHE_DIR).
+# Guarded so local runs without ccache installed still work.
+export CCACHE_DIR="${CCACHE_DIR:-/root/.cache/ccache}"
+compiler_launcher=()
+if command -v ccache >/dev/null 2>&1; then
+    compiler_launcher=(-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache)
+fi
+
 prepare() {
     if command -v dpkg-query >/dev/null 2>&1 && \
        ! dpkg-query -W -f='${Status}' libmpg123-dev 2>/dev/null | grep -q 'install ok installed'; then
@@ -43,6 +51,7 @@ build_shim() {
     fi
     cmake -S "$BUILD_ROOT/SDL" -B "$BUILD_ROOT/SDL-build" -G Ninja \
         -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$BUILD_ROOT/sysroot" \
+        "${compiler_launcher[@]}" \
         -DSDL_SDL2_BACKEND=ON -DSDL_SPIRV_CROSS_DIR="$BUILD_ROOT/SPIRV-Cross" \
         -DSDL_UNIX_CONSOLE_BUILD=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF \
         -DSDL_X11=OFF -DSDL_WAYLAND=OFF -DSDL_KMSDRM=OFF \
@@ -70,11 +79,14 @@ build_game() {
     local build_dir="build-${GAME}-portmaster"
     cmake -S /workspace -B "/workspace/$build_dir" -G Ninja \
         -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON \
+        "${compiler_launcher[@]}" \
         -DGTASA_DEBUG_LOG="${GTASA_DEBUG_LOG:-OFF}" -DGTASA_QUIT_CHORD=ON -DGTASA_SDL2_SHIM=ON \
+        -DGTASA_FREE_AIM="${GTASA_FREE_AIM:-OFF}" \
         -DGTASA_PRODUCT_NAME="$GAME_TITLE" -DGTASA_CONFIG_NAME="$CONFIG_NAME" \
         -DGTASA_APPSTATE_NAME="$APPSTATE_NAME" -DGAME_BINARY_NAME="$BINARY_NAME"
     cmake --build "/workspace/$build_dir" --parallel "${JOBS:-2}"
     ctest --test-dir "/workspace/$build_dir" --output-on-failure
+    command -v ccache >/dev/null 2>&1 && ccache -s || true
     local out="$OUT_ROOT/$GAME"
     rm -rf "$out"
     mkdir -p "$out/libs.aarch64"

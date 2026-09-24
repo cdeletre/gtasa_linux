@@ -17,16 +17,28 @@
 
 ## Verified cross-build environment
 
-Persistent container `gtasa-aarch64-build` is amd64 Debian Bookworm. Project is
-mounted at `/src`; compiler is `aarch64-linux-gnu-gcc`; SDL source/build/install
-are `/opt/SDL`, `/opt/SDL-build`, `/opt/target-aarch64`.
-
-Incremental build (do not recreate the container or wipe its dependency trees):
+Always build with the Containerfile — do not hand-roll containers or exec
+into persistent ones:
 
 ```sh
-podman exec gtasa-aarch64-build cmake --build /src/build-aarch64 -j2
-podman exec gtasa-aarch64-build cp -L /opt/target-aarch64/lib/libSDL3.so.0 /src/libSDL3.so.0
+podman build --platform linux/arm64 -f Containerfile --target artifact \
+  -t localhost/gtasa-portmaster-artifact:debug .
 ```
+
+On amd64 hosts `--platform linux/arm64` is required: the
+`portmaster-builder:aarch64-latest` base has no amd64 manifest entry, and
+without it buildah fails resolving the base image. The build runs emulated
+(qemu-user), so expect it to take a while; run it in the background with a
+completion notification. Optional CMake flags go through `--build-arg`
+(e.g. `--build-arg GTASA_FREE_AIM=ON`); defaults stay pure.
+
+The script inside (`scripts/portmaster-build.sh build`) clones the pinned
+SDL/SPIRV-Cross commits, builds the SDL3-to-system-SDL2 shim, configures the
+game (`Release`, `BUILD_TESTING=ON`, quit chord on, SDL2 shim on), runs
+`ctest`, GLIBC-checks the outputs (max 2.30), and stages the package.
+Compiles go through ccache when installed (Containerfile provides it plus a
+persistent `/root/.cache/ccache` mount); `ccache -s` prints at the end of
+the game build.
 
 When reconfiguring, target pkg-config must precede host paths:
 `PKG_CONFIG_PATH=/opt/target-aarch64/lib/pkgconfig`,
